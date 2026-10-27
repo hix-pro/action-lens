@@ -33,7 +33,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@dagrejs/dagre": "^1.1.5",
+    "@dagrejs/dagre": "^3.1.2",
     "@fontsource-variable/inter": "^5.3.0",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@xyflow/react": "^12.8.4",
