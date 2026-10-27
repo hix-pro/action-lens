@@ -3,6 +3,7 @@
 **GitHub Actions, explained.** Paste a workflow and see the job graph, the real matrix size, the token permissions, the risky triggers, and a rough run footprint — before it reaches `main`.
 
 [![CI](https://github.com/hix-pro/action-lens/actions/workflows/ci.yml/badge.svg)](https://github.com/hix-pro/action-lens/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/hix-pro/action-lens)](https://github.com/hix-pro/action-lens/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-5aa9ff.svg)](LICENSE)
 
 ![ActionLens showing the deliberately unsafe PR preview example](docs/screenshot.png)
