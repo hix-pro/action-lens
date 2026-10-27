@@ -1,0 +1,29 @@
+name: PR preview
+
+# Deliberately unsafe demo fixture: never deploy this workflow.
+on: pull_request_target
+
+permissions: write-all
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Echo pull request title
+        run: echo "${{ github.event.pull_request.title }}"
+
+      - name: Publish preview
+        run: ./scripts/preview.sh
+        env:
+          PREVIEW_TOKEN: sk_live_51H8demo

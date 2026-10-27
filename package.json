@@ -1,0 +1,58 @@
+{
+  "name": "action-lens",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "See what a GitHub Actions workflow really does: job graph, matrix expansion, permissions, risks, and run footprint.",
+  "license": "MIT",
+  "author": "hix-pro",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hix-pro/action-lens.git"
+  },
+  "homepage": "https://hix-pro.github.io/action-lens/",
+  "bugs": {
+    "url": "https://github.com/hix-pro/action-lens/issues"
+  },
+  "keywords": [
+    "github-actions",
+    "ci",
+    "visualization",
+    "security",
+    "devtools"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run test && npm run typecheck && npm run build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@dagrejs/dagre": "^1.1.5",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "@xyflow/react": "^12.8.4",
+    "lucide-react": "^1.61.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^3.2.4"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
+}

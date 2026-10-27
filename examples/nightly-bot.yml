@@ -1,0 +1,28 @@
+name: Nightly deploy
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+  schedule:
+    - cron: "0 3 * * *"
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install helper
+        run: curl -fsSL https://example.com/install.sh | bash
+
+      - name: Deploy
+        run: ./scripts/deploy.sh
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+
+  notify:
+    needs: deploy
+    uses: acme/shared-workflows/.github/workflows/notify.yml@main
+    secrets: inherit
