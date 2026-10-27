@@ -54,7 +54,7 @@ npm test         # 52 Vitest unit tests
 npm run typecheck
 ```
 
-A live demo is published at **<https://hix-pro.github.io/action-lens/>** when the Pages workflow is enabled.
+A live demo is published at **<https://hix-pro.github.io/action-lens/>**.
 
 ## Using it
 
