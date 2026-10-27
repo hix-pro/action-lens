@@ -37,6 +37,10 @@ function expandDimensions(
 ): Combination[] | null {
   const keys = Object.keys(dimensions)
   if (keys.length === 0) return []
+  // A dimension with no values empties the whole expansion. Detect it before
+  // materializing so an earlier overflow cannot mask an empty matrix as null;
+  // null stays reserved for genuinely over-limit products.
+  if (keys.some((key) => (dimensions[key] ?? []).length === 0)) return []
 
   let combinations: Combination[] = [{}]
   for (const key of keys) {
@@ -81,13 +85,22 @@ export function computeMatrixCount(info: {
   }
 
   const kept = base.filter(
-    (combination) => !info.exclude.some((filter) => matches(combination, filter)),
+    (combination) =>
+      // GitHub ignores exclude entries without key/value pairs instead of
+      // letting them match every combination.
+      !info.exclude.some(
+        (filter) => Object.keys(filter).length > 0 && matches(combination, filter),
+      ),
   )
 
-  let count = kept.length
-  const additions = countNewIncludes(info)
-  count += additions
-  return count
+  // With no base combination to merge into (include-only matrices, or an
+  // expansion emptied by exclude or an empty dimension), every non-empty
+  // include entry stands alone as its own combination.
+  if (kept.length === 0) {
+    return info.include.filter((entry) => Object.keys(entry).length > 0).length
+  }
+
+  return kept.length + countNewIncludes(info)
 }
 
 function countNewIncludes(info: {

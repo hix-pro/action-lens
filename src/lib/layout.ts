@@ -28,9 +28,13 @@ export function buildJobGraph(workflow: Workflow, findings: Finding[]): JobGraph
   }
 
   const edges: Edge[] = []
+  const seen = new Set<string>()
   for (const job of workflow.jobs) {
     for (const dependency of job.needs) {
       if (!ids.has(dependency)) continue
+      const key = `${job.id}->${dependency}`
+      if (seen.has(key)) continue
+      seen.add(key)
       graph.setEdge(job.id, dependency)
       edges.push({
         id: `${job.id}->${dependency}`,

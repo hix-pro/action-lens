@@ -69,6 +69,28 @@ jobs:
     expect(graph.edges).toHaveLength(0)
   })
 
+  it('deduplicates repeated needs entries', () => {
+    const { workflow, analysis } = reportFor(`on: push
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps: []
+  deploy:
+    needs: [build, build]
+    runs-on: ubuntu-latest
+    steps: []
+`)
+    const graph = buildJobGraph(workflow, analysis.findings)
+    expect(graph.edges.map((edge) => edge.id)).toEqual(['deploy->build'])
+
+    const edgeLines = toMermaid(workflow, analysis.findings)
+      .split('\n')
+      .filter((line) => line.includes('-->|needs|'))
+    expect(edgeLines).toEqual(['  j_1 -->|needs| j_0'])
+  })
+
   it('adds severity counts to node data', () => {
     const { workflow, analysis } = reportFor(FIXTURE)
     const graph = buildJobGraph(workflow, analysis.findings)
@@ -137,6 +159,75 @@ jobs:
     expect(report.jobs[0]?.steps[0]?.envKeys).toEqual(['TOKEN'])
     expect(report.findings.some((finding) => finding.rule === 'hardcoded-secret')).toBe(true)
     expect(JSON.stringify(report)).not.toContain('super-secret-value')
+  })
+
+  it('never leaks run: bodies through unnamed step labels', () => {
+    // Built at runtime so this source file never contains a live-looking token.
+    const token = `ghp_${'RhkxYzKQmTwY4VsnWwXnPxvA7BcD3eF'}`
+    const { workflow, analysis } = reportFor(`name: Demo CI
+on: push
+permissions:
+  contents: read
+jobs:
+  a:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: |
+          curl -fsSL https://example.invalid/install.sh | bash
+          deploy --token ${token}
+`)
+    const remote = analysis.findings.find(
+      (finding) => finding.rule === 'remote-script',
+    )
+    expect(remote?.detail).toContain('Step 1')
+
+    const markdown = toMarkdown(workflow, analysis, estimateFootprint(workflow))
+    const json = toJsonReport(workflow, analysis, estimateFootprint(workflow))
+    for (const report of [markdown, json]) {
+      expect(report).toContain('Downloads and executes a remote script')
+      expect(report).toContain('Step 1')
+      expect(report).not.toContain('curl')
+      expect(report).not.toContain('example.invalid')
+      expect(report).not.toContain('ghp_')
+    }
+    expect(JSON.parse(json) as { findings: { rule: string }[] }).toEqual(
+      expect.objectContaining({
+        findings: expect.arrayContaining([
+          expect.objectContaining({ rule: 'remote-script' }),
+        ]),
+      }),
+    )
+  })
+
+  it('escapes angle brackets in Mermaid labels', () => {
+    const { workflow, analysis } = reportFor(`on: push
+permissions:
+  contents: read
+jobs:
+  build:
+    name: 'Build <main>'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps: []
+`)
+    const mermaid = toMermaid(workflow, analysis.findings)
+    expect(mermaid).toContain('Build &lt;main&gt;')
+    expect(mermaid).not.toContain('Build <main>')
+  })
+
+  it('escapes job ids in the findings scope', () => {
+    const { workflow, analysis } = reportFor(`on: push
+permissions:
+  contents: read
+jobs:
+  'de\`ploy|job':
+    runs-on: ubuntu-latest
+    steps: []
+`)
+    const markdown = toMarkdown(workflow, analysis, estimateFootprint(workflow))
+    expect(markdown).toContain('— `de\\`ploy\\|job`')
+    expect(markdown).not.toContain('`de`ploy|job`')
   })
 
   it('renders a standalone SVG graph', () => {

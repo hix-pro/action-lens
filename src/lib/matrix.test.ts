@@ -61,6 +61,73 @@ describe('matrix expansion', () => {
     expect(matrix?.count).toBe(3)
   })
 
+  it('matches the README example: exclude then a merged include entry', () => {
+    const matrix = parseMatrix({
+      os: ['ubuntu-latest', 'windows-latest'],
+      node: [20, 22, 24],
+      exclude: [{ os: 'windows-latest', node: 20 }],
+      include: [{ node: 22, coverage: true }],
+    })
+    expect(matrix?.count).toBe(5)
+  })
+
+  it('adds a job for an include entry whose dimension value matches nothing', () => {
+    const matrix = parseMatrix({
+      os: ['windows-latest'],
+      node: [20],
+      include: [{ os: 'ubuntu-latest' }],
+    })
+    expect(matrix?.count).toBe(2)
+  })
+
+  it('expands an include-only matrix to one job per entry', () => {
+    const matrix = parseMatrix({
+      include: [
+        { node: 20, experimental: true },
+        { node: 22, experimental: true },
+      ],
+    })
+    expect(matrix?.count).toBe(2)
+    expect(matrix?.dynamic).toBe(false)
+  })
+
+  it('ignores empty include entries in an include-only matrix', () => {
+    const matrix = parseMatrix({
+      include: [{ node: 20 }, {}, { os: 'ubuntu-latest' }],
+    })
+    expect(matrix?.count).toBe(2)
+  })
+
+  it('ignores exclude entries without key/value pairs', () => {
+    const scalar = parseMatrix({
+      os: ['ubuntu-latest', 'windows-latest'],
+      node: [20, 22],
+      exclude: ['oops'],
+    })
+    expect(scalar?.count).toBe(4)
+
+    const empty = parseMatrix({
+      os: ['ubuntu-latest', 'windows-latest'],
+      node: [20, 22],
+      exclude: [{}],
+    })
+    expect(empty?.count).toBe(4)
+  })
+
+  it('keeps an empty expansion empty when another dimension overflows', () => {
+    const dimensions = {
+      a: Array.from({ length: 10_001 }, (_, index) => String(index)),
+      b: [],
+    }
+    const count = computeMatrixCount({
+      dimensions,
+      include: [],
+      exclude: [],
+      dynamic: false,
+    })
+    expect(count).toBe(0)
+  })
+
   it('handles an empty dimension as zero jobs', () => {
     const matrix = parseMatrix({ node: [] })
     expect(matrix?.count).toBe(0)

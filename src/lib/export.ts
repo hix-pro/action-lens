@@ -26,11 +26,18 @@ function escapeXml(value: string): string {
 }
 
 function escapeMarkdown(value: string): string {
-  return value.replaceAll('|', '\\|').replace(/\n/g, ' ')
+  return value
+    .replaceAll('|', '\\|')
+    .replaceAll('`', '\\`')
+    .replace(/\n/g, ' ')
 }
 
 function escapeMermaid(value: string): string {
-  return value.replaceAll('"', '#quot;').replaceAll('\n', ' ')
+  return value
+    .replaceAll('"', '#quot;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('\n', ' ')
 }
 
 function truncate(value: string, length: number): string {
@@ -95,11 +102,15 @@ export function toMermaid(workflow: Workflow, findings: Finding[]): string {
     lines.push(`  ${id}["${label}"]:::${tone}`)
   }
 
+  const linked = new Set<string>()
   for (const job of workflow.jobs) {
     for (const dependency of job.needs) {
       const source = ids.get(job.id)
       const target = ids.get(dependency)
       if (!source || !target) continue
+      const key = `${source}->${target}`
+      if (linked.has(key)) continue
+      linked.add(key)
       lines.push(`  ${source} -->|needs| ${target}`)
     }
   }
@@ -163,7 +174,7 @@ export function toMarkdown(
     if (group.length === 0) continue
     lines.push(`### ${SEVERITY_LABEL[severity]} (${group.length})`, '')
     for (const finding of group) {
-      const scope = finding.job ? ` — \`${finding.job}\`` : ''
+      const scope = finding.job ? ` — \`${escapeMarkdown(finding.job)}\`` : ''
       lines.push(`- **${escapeMarkdown(finding.title)}**${scope}`)
       lines.push(`  - ${escapeMarkdown(finding.detail)}`)
       lines.push(`  - **Fix:** ${escapeMarkdown(finding.fix)}`)

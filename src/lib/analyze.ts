@@ -36,7 +36,8 @@ function addFinding(
 function stepLabel(step: Step): string {
   if (step.name) return step.name
   if (step.uses) return step.uses.split('@')[0] ?? step.uses
-  if (step.run) return step.run.trim().split('\n')[0]?.slice(0, 60) ?? 'run step'
+  // Positional label only. Finding details are embedded in exported reports,
+  // so run: content must never be used as a step label.
   return `Step ${step.index + 1}`
 }
 

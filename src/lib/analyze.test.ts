@@ -328,8 +328,19 @@ jobs:
     strategy:
       matrix: \${{ fromJSON(needs.setup.outputs.matrix) }}
     steps: []
+  c:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      matrix:
+        include:
+          - node: 20
+            experimental: true
+          - node: 22
+            experimental: true
+    steps: []
 `)
-    expect(analysis.stats.instances).toBe(4)
+    expect(analysis.stats.instances).toBe(6)
     expect(analysis.stats.dynamicMatrices).toBe(1)
   })
 

@@ -51,7 +51,7 @@ Quality checks:
 
 ```bash
 npm run check    # tests, typecheck, production build
-npm test         # 52 Vitest unit tests
+npm test         # 62 Vitest unit tests
 npm run typecheck
 ```
 
@@ -206,7 +206,7 @@ docs/               Screenshots used by this README
 ```bash
 npm install
 npm run dev          # Vite dev server
-npm test             # 52 Vitest unit tests
+npm test             # 62 Vitest unit tests
 npm run typecheck    # strict TypeScript, no emit
 npm run build        # production build
 npm run check        # all of the above
