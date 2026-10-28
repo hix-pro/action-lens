@@ -229,6 +229,8 @@ The parser, matrix calculator, rule engine, footprint estimator, and exporters a
 
 _Part of the **[hix tools](https://github.com/hix-pro#readme)** suite — local-first, no backend, CI-ready._
 
+**Deep dive:** [16 things to check in your GitHub Actions workflows](https://hix-pro.github.io/blog/posts/04-action-lens-16-workflow-checks.html)
+
 ## License
 
 [MIT](LICENSE) © hix-pro
