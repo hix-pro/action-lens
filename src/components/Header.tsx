@@ -43,7 +43,7 @@ export function Header() {
       </span>
 
       <span className="ml-1 hidden items-center gap-1 rounded-full border border-white/[0.07] bg-white/[0.025] px-2 py-0.5 font-mono text-[9px] text-slate-500 lg:inline-flex">
-        v0.1
+        v0.2
       </span>
 
       <div className="ml-auto flex items-center gap-2">

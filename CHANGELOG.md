@@ -5,6 +5,14 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-10-29
+
+### Added
+- Compare mode: paste a previous and a proposed workflow to see jobs added, removed, or changed, along with workflow-level triggers, permissions, concurrency, and environment changes. The comparison reuses the same parser and 16-rule engine as the main view.
+- Field-level job and step deltas for runners, `needs`, timeout, permissions, matrix dimensions, `env`, `with`, and `continue-on-error`.
+- Findings introduced, resolved, and re-graded between revisions, so a warning that becomes critical is called out.
+- `run:` bodies are compared as changed but never displayed, and secret-looking environment or `with` values are redacted in the diff.
+
 ## [0.1.1] - 2026-10-28
 
 ### Added

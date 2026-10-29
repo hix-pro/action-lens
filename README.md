@@ -20,6 +20,7 @@ Everything runs in the browser. There is no backend, no GitHub token, and no upl
 
 - **Job graph** — jobs, `needs` edges, matrix size, runner, timeout state, and severity at a glance.
 - **16 review rules** — privileged triggers, token permissions, secret handling, script injection, unpinned actions, self-hosted runners, and more.
+- **Compare revisions** — paste a previous and proposed workflow to see jobs, triggers, permissions, env, matrix, and findings added, removed, or changed. Scripts stay hidden and secrets stay redacted.
 - **Real matrix arithmetic** — computes `matrix` dimensions with `include`/`exclude` rules and marks expression-driven matrices as dynamic instead of pretending to know.
 - **Job inspector** — click a node for runner, matrix, timeout, needs, inherited token permissions, and a safe step list. Step scripts and secret values are never printed.
 - **Run footprint** — a configurable planning estimate for job instances, runner minutes, and private-repo cost. It is not a bill.
@@ -51,7 +52,7 @@ Quality checks:
 
 ```bash
 npm run check    # tests, typecheck, production build
-npm test         # 62 Vitest unit tests
+npm test         # 70 Vitest unit tests
 npm run typecheck
 ```
 
@@ -66,6 +67,21 @@ A live demo is published at **<https://hix-pro.github.io/action-lens/>**.
 5. Adjust the footprint assumptions or export a report for a pull request.
 
 The editor remembers the last file and assumptions in `localStorage`. Use **Reset sample** to return to a known fixture.
+
+## Comparing two revisions
+
+The riskiest workflow change is usually a one-line edit inside a large diff: a `pull_request_target` trigger added, `permissions` widened from `contents: read` to `write-all`, or a job moved to a self-hosted runner. Reading the new file on its own forces you to remember what the old one said.
+
+**Compare** opens a side-by-side view. It parses both revisions with the same parser and runs the same 16 rules against each, then reports the delta:
+
+- Jobs added, removed, and changed, with field-level changes for `runs-on`, `needs`, timeout, permissions, matrix, `env`, `with`, and `continue-on-error`.
+- Workflow-level trigger, schedule, concurrency, permission, and environment changes.
+- Steps added or removed, plus changed step properties.
+- Findings introduced, resolved, and re-graded. A warning that becomes critical is shown as a severity change instead of looking like the same finding.
+
+`run:` bodies are compared but never rendered: a script change appears as `script → script changed (hidden)`. Secret-looking `env` and `with` values are redacted in the comparison, just as they are in the main review and exports. **Swap sides** reverses the direction, and either side can be reset to the workflow currently in the editor.
+
+The comparison is static, like the rest of the app. It tells you which risks changed, not whether the new workflow is safe, and it cannot evaluate expressions or `if:` conditions.
 
 ## What it checks
 
@@ -177,6 +193,7 @@ src/
     parse-workflow.ts
     matrix.ts
     analyze.ts
+    diff.ts
     layout.ts
     estimate.ts
     export.ts
@@ -198,7 +215,8 @@ docs/               Screenshots used by this README
 - **Dynamic matrices are unknowable.** Expressions, `fromJSON`, and reusable workflow outputs are marked dynamic rather than guessed.
 - **The footprint is an estimate.** It uses a single minutes-per-job assumption; it does not model per-step duration, concurrent runners, cache hits, or billing rules.
 - **Secret detection is heuristic.** It looks for secret-shaped keys and known token prefixes. A secret stored under an unrelated key or split across lines will be missed.
-- **Reports contain configuration, not source.** `run:` bodies are reviewed in the browser but never included in an export.
+- **Reports contain configuration, not source.** `run:` bodies are reviewed in the browser but never included in an export or a comparison.
+- **Comparison is static.** It shows what changed between two revisions; it does not prove the proposed workflow is safe.
 - Tested in current Chromium. The app needs a modern browser with ES2022 support.
 
 ## Development
@@ -206,7 +224,7 @@ docs/               Screenshots used by this README
 ```bash
 npm install
 npm run dev          # Vite dev server
-npm test             # 62 Vitest unit tests
+npm test             # 70 Vitest unit tests
 npm run typecheck    # strict TypeScript, no emit
 npm run build        # production build
 npm run check        # all of the above

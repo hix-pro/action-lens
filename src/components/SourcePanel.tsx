@@ -2,6 +2,7 @@ import {
   Check,
   FileCode2,
   FileUp,
+  GitCompareArrows,
   Layers3,
   ListChecks,
   LockKeyhole,
@@ -23,6 +24,7 @@ interface SourcePanelProps {
   onLoadSample: (sample: WorkflowSample) => void
   onLoadFile: (file: File) => void
   onReset: () => void
+  onCompare: () => void
 }
 
 function Stat({
@@ -63,6 +65,7 @@ export function SourcePanel({
   onLoadSample,
   onLoadFile,
   onReset,
+  onCompare,
 }: SourcePanelProps) {
   const fileInput = useRef<HTMLInputElement>(null)
   const lines = source ? source.split('\n').length : 0
@@ -135,6 +138,14 @@ export function SourcePanel({
           >
             <RotateCcw size={11} strokeWidth={1.9} />
             Reset sample
+          </button>
+          <button
+            type="button"
+            onClick={onCompare}
+            className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-beam/25 bg-beam/[0.06] px-2.5 py-1.5 text-[10.5px] font-medium text-beam-soft transition-colors hover:border-beam/45 hover:bg-beam/[0.1] hover:text-white"
+          >
+            <GitCompareArrows size={12} strokeWidth={2} />
+            Compare
           </button>
           <input
             ref={fileInput}
