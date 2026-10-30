@@ -13,6 +13,7 @@ import {
 import { useRef, type ChangeEvent } from 'react'
 import type { Analysis } from '../types'
 import { samples, type WorkflowSample } from '../lib/samples'
+import { GitHubMark } from './GitHubMark'
 
 interface SourcePanelProps {
   source: string
@@ -23,6 +24,7 @@ interface SourcePanelProps {
   onChange: (value: string) => void
   onLoadSample: (sample: WorkflowSample) => void
   onLoadFile: (file: File) => void
+  onLoadGitHub: () => void
   onReset: () => void
   onCompare: () => void
 }
@@ -64,6 +66,7 @@ export function SourcePanel({
   onChange,
   onLoadSample,
   onLoadFile,
+  onLoadGitHub,
   onReset,
   onCompare,
 }: SourcePanelProps) {
@@ -122,30 +125,22 @@ export function SourcePanel({
           )}
         </div>
 
-        <div className="mt-2 flex items-center gap-2">
+        <div className="mt-2 grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={() => fileInput.current?.click()}
-            className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[10.5px] font-medium text-slate-300 transition-colors hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[10.5px] font-medium text-slate-300 transition-colors hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
           >
             <FileUp size={12} strokeWidth={1.9} />
             Open file
           </button>
           <button
             type="button"
-            onClick={onReset}
-            className="inline-flex items-center gap-1.5 rounded-md border border-transparent px-2 py-1.5 text-[10.5px] font-medium text-slate-500 transition-colors hover:text-slate-200"
+            onClick={onLoadGitHub}
+            className="inline-flex items-center justify-center gap-1.5 rounded-md border border-beam/25 bg-beam/[0.06] px-2.5 py-1.5 text-[10.5px] font-medium text-beam-soft transition-colors hover:border-beam/45 hover:bg-beam/[0.1] hover:text-white"
           >
-            <RotateCcw size={11} strokeWidth={1.9} />
-            Reset sample
-          </button>
-          <button
-            type="button"
-            onClick={onCompare}
-            className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-beam/25 bg-beam/[0.06] px-2.5 py-1.5 text-[10.5px] font-medium text-beam-soft transition-colors hover:border-beam/45 hover:bg-beam/[0.1] hover:text-white"
-          >
-            <GitCompareArrows size={12} strokeWidth={2} />
-            Compare
+            <GitHubMark size={12} />
+            GitHub
           </button>
           <input
             ref={fileInput}
@@ -154,6 +149,25 @@ export function SourcePanel({
             className="hidden"
             onChange={handleFile}
           />
+        </div>
+
+        <div className="mt-1.5 flex items-center">
+          <button
+            type="button"
+            onClick={onReset}
+            className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-1.5 text-[10px] font-medium text-slate-500 transition-colors hover:text-slate-200"
+          >
+            <RotateCcw size={10} strokeWidth={1.9} />
+            Reset sample
+          </button>
+          <button
+            type="button"
+            onClick={onCompare}
+            className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1.5 text-[10px] font-medium text-slate-300 transition-colors hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
+          >
+            <GitCompareArrows size={11} strokeWidth={2} />
+            Compare
+          </button>
         </div>
 
         {analysis ? (

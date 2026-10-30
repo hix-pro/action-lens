@@ -230,9 +230,25 @@ function matchSteps(before: Step[], after: Step[]): {
   const remaining = [...before]
   const pairs: { before: Step; after: Step }[] = []
   const added: Step[] = []
+  const unmatched: Step[] = []
+
   for (const step of after) {
     const identity = stepIdentity(step)
     const index = remaining.findIndex((candidate) => stepIdentity(candidate) === identity)
+    if (index === -1) {
+      unmatched.push(step)
+    } else {
+      pairs.push({ before: remaining[index], after: step })
+      remaining.splice(index, 1)
+    }
+  }
+
+  // An action version bump changes `uses` but keeps the step name. Pair those
+  // by name so the diff shows a field change instead of an add plus a remove.
+  for (const step of unmatched) {
+    const index = step.name
+      ? remaining.findIndex((candidate) => candidate.name === step.name)
+      : -1
     if (index === -1) {
       added.push(step)
     } else {
@@ -240,6 +256,7 @@ function matchSteps(before: Step[], after: Step[]): {
       remaining.splice(index, 1)
     }
   }
+
   return { pairs, added, removed: remaining }
 }
 
@@ -309,7 +326,7 @@ function jobChanges(before: Job, after: Job): FieldChange[] {
     if (change) {
       for (const field of change.changes) {
         changes.push({
-          field: `steps[${change.index + 1}].${field.field}`,
+          field: `step ${change.index + 1} · ${change.label} · ${field.field}`,
           before: field.before,
           after: field.after,
         })

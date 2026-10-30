@@ -18,10 +18,18 @@ import type { Analysis, Finding, ParseResult, Severity } from '../types'
 
 const MAX_FILE_BYTES = 1_000_000
 
+export interface CompareRevision {
+  source: string
+  filename: string
+  label?: string
+}
+
 interface CompareDialogProps {
   source: string
   filename: string
   onClose: () => void
+  initialBefore?: CompareRevision
+  initialAfter?: CompareRevision
 }
 
 const SEVERITY_STYLE: Record<Severity, string> = {
@@ -230,11 +238,19 @@ function Editor({
   )
 }
 
-export function CompareDialog({ source, filename, onClose }: CompareDialogProps) {
-  const [beforeSource, setBeforeSource] = useState(source)
-  const [afterSource, setAfterSource] = useState(source)
-  const [beforeName, setBeforeName] = useState(filename)
-  const [afterName, setAfterName] = useState(filename)
+export function CompareDialog({
+  source,
+  filename,
+  onClose,
+  initialBefore,
+  initialAfter,
+}: CompareDialogProps) {
+  const [beforeSource, setBeforeSource] = useState(initialBefore?.source ?? source)
+  const [afterSource, setAfterSource] = useState(initialAfter?.source ?? source)
+  const [beforeName, setBeforeName] = useState(initialBefore?.filename ?? filename)
+  const [afterName, setAfterName] = useState(initialAfter?.filename ?? filename)
+  const [beforeHint, setBeforeHint] = useState(initialBefore?.label ?? 'Previous revision')
+  const [afterHint, setAfterHint] = useState(initialAfter?.label ?? 'Proposed revision')
   const dialogRef = useRef<HTMLDivElement>(null)
   const beforeFile = useRef<HTMLInputElement>(null)
   const afterFile = useRef<HTMLInputElement>(null)
@@ -276,15 +292,19 @@ export function CompareDialog({ source, filename, onClose }: CompareDialogProps)
     setAfterSource(beforeSource)
     setBeforeName(afterName)
     setAfterName(beforeName)
+    setBeforeHint(afterHint)
+    setAfterHint(beforeHint)
   }
 
   function useCurrent(side: 'before' | 'after') {
     if (side === 'before') {
       setBeforeSource(source)
       setBeforeName(filename)
+      setBeforeHint('Current editor')
     } else {
       setAfterSource(source)
       setAfterName(filename)
+      setAfterHint('Current editor')
     }
   }
 
@@ -342,7 +362,7 @@ export function CompareDialog({ source, filename, onClose }: CompareDialogProps)
           <div className="grid gap-3 lg:grid-cols-2">
             <Editor
               title="Before"
-              hint="Previous revision"
+              hint={beforeHint}
               source={beforeSource}
               filename={beforeName}
               parse={before}
@@ -352,7 +372,7 @@ export function CompareDialog({ source, filename, onClose }: CompareDialogProps)
             />
             <Editor
               title="After"
-              hint="Proposed revision"
+              hint={afterHint}
               source={afterSource}
               filename={afterName}
               parse={after}
