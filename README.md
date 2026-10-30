@@ -14,13 +14,14 @@
 
 A workflow file is deceptively small. `needs` hides the dependency order, `strategy.matrix` can turn three jobs into eighteen, `permissions` is often missing entirely, and a single `${{ github.event.pull_request.title }}` inside `run:` is enough to hand a pull request author a shell. ActionLens turns the YAML into a graph and a review so those details are visible at a glance.
 
-Everything runs in the browser. There is no backend, no GitHub token, and no upload.
+Everything runs in the browser. There is no backend, no token, and no upload. You can load a workflow from a public GitHub repository on demand; the file comes straight from GitHub to this tab.
 
 ## Features
 
 - **Job graph** — jobs, `needs` edges, matrix size, runner, timeout state, and severity at a glance.
 - **16 review rules** — privileged triggers, token permissions, secret handling, script injection, unpinned actions, self-hosted runners, and more.
 - **Compare revisions** — paste a previous and proposed workflow to see jobs, triggers, permissions, env, matrix, and findings added, removed, or changed. Scripts stay hidden and secrets stay redacted.
+- **GitHub on demand** — load a workflow from any public repository, or compare the workflow changes in a pull request. Requests go from this tab directly to GitHub; no token, backend, or account is involved.
 - **Real matrix arithmetic** — computes `matrix` dimensions with `include`/`exclude` rules and marks expression-driven matrices as dynamic instead of pretending to know.
 - **Job inspector** — click a node for runner, matrix, timeout, needs, inherited token permissions, and a safe step list. Step scripts and secret values are never printed.
 - **Run footprint** — a configurable planning estimate for job instances, runner minutes, and private-repo cost. It is not a bill.
@@ -52,7 +53,7 @@ Quality checks:
 
 ```bash
 npm run check    # tests, typecheck, production build
-npm test         # 70 Vitest unit tests
+npm test         # 90 Vitest unit tests
 npm run typecheck
 ```
 
@@ -60,7 +61,7 @@ A live demo is published at **<https://hix-pro.github.io/action-lens/>**.
 
 ## Using it
 
-1. Paste a workflow into the editor, drag a `.yml`/`.yaml` file anywhere onto the page, or click **Open file**.
+1. Paste a workflow into the editor, drag a `.yml`/`.yaml` file anywhere onto the page, click **Open file**, or click **GitHub** to load a public repository or pull request.
 2. Read the graph. An arrow points from a job to a job it needs.
 3. Click a job to inspect its runner, matrix, timeout, token, and steps.
 4. Work through the review. Each finding includes a concrete fix.
@@ -72,6 +73,8 @@ The editor remembers the last file and assumptions in `localStorage`. Use **Rese
 
 The riskiest workflow change is usually a one-line edit inside a large diff: a `pull_request_target` trigger added, `permissions` widened from `contents: read` to `write-all`, or a job moved to a self-hosted runner. Reading the new file on its own forces you to remember what the old one said.
 
+![ActionLens comparing the base and head workflow revisions from a pull request](docs/compare.png)
+
 **Compare** opens a side-by-side view. It parses both revisions with the same parser and runs the same 16 rules against each, then reports the delta:
 
 - Jobs added, removed, and changed, with field-level changes for `runs-on`, `needs`, timeout, permissions, matrix, `env`, `with`, and `continue-on-error`.
@@ -82,6 +85,23 @@ The riskiest workflow change is usually a one-line edit inside a large diff: a `
 `run:` bodies are compared but never rendered: a script change appears as `script → script changed (hidden)`. Secret-looking `env` and `with` values are redacted in the comparison, just as they are in the main review and exports. **Swap sides** reverses the direction, and either side can be reset to the workflow currently in the editor.
 
 The comparison is static, like the rest of the app. It tells you which risks changed, not whether the new workflow is safe, and it cannot evaluate expressions or `if:` conditions.
+
+## Loading from GitHub
+
+![ActionLens loading the workflow files changed by a pull request](docs/github.png)
+
+Click **GitHub** in the source panel. ActionLens accepts:
+
+- `owner/repo` or `https://github.com/owner/repo` — lists the workflow files on the default branch.
+- `owner/repo#123` or a pull request URL — lists the workflow files changed by that pull request.
+
+Choosing a repository file opens it in the editor. For a pull request, modified and renamed workflows open in **Compare**:
+
+- The **before** side is the pull request merge base, not the current base-branch tip. If `main` moved after the branch was created, unrelated commits on `main` do not appear as part of the PR.
+- The **after** side is the pull request head.
+- A workflow added by the PR opens at the head revision. A deleted workflow is marked and cannot be opened.
+
+Requests go directly from the browser to `api.github.com` and `raw.githubusercontent.com`. Public repositories only; no token is requested or stored. GitHub limits anonymous API clients to **60 requests per hour** per IP, enough for several repository or PR lookups. Workflow contents are fetched only for the file you choose. Private repositories, private forks, and saved history are out of scope.
 
 ## What it checks
 
@@ -194,6 +214,7 @@ src/
     matrix.ts
     analyze.ts
     diff.ts
+    github.ts
     layout.ts
     estimate.ts
     export.ts
@@ -210,7 +231,7 @@ docs/               Screenshots used by this README
 
 ## Limitations
 
-- **Static review only.** ActionLens does not run the workflow, resolve expressions, evaluate `if:` conditions, inspect action internals, or contact the GitHub API.
+- **Static review only.** ActionLens does not run the workflow, resolve expressions, evaluate `if:` conditions, or inspect action internals. It reads workflow files from public GitHub repositories only when you ask it to load one.
 - **Not a security audit.** A clean review means these rules found nothing, not that the workflow is safe.
 - **Dynamic matrices are unknowable.** Expressions, `fromJSON`, and reusable workflow outputs are marked dynamic rather than guessed.
 - **The footprint is an estimate.** It uses a single minutes-per-job assumption; it does not model per-step duration, concurrent runners, cache hits, or billing rules.
@@ -224,7 +245,7 @@ docs/               Screenshots used by this README
 ```bash
 npm install
 npm run dev          # Vite dev server
-npm test             # 70 Vitest unit tests
+npm test             # 90 Vitest unit tests
 npm run typecheck    # strict TypeScript, no emit
 npm run build        # production build
 npm run check        # all of the above

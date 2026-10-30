@@ -13,8 +13,10 @@ import { SourcePanel } from './components/SourcePanel'
 import { GraphPanel } from './components/GraphPanel'
 import { FindingsPanel } from './components/FindingsPanel'
 import { CompareDialog } from './components/CompareDialog'
+import { GitHubDialog } from './components/GitHubDialog'
 import { analyzeWorkflow } from './lib/analyze'
 import { estimateFootprint } from './lib/estimate'
+import type { WorkflowComparison } from './lib/github'
 import { parseWorkflow } from './lib/parse-workflow'
 import { defaultSample, findSample, type WorkflowSample } from './lib/samples'
 import type { Footprint } from './types'
@@ -89,6 +91,8 @@ export default function App() {
   const [toast, setToast] = useState<Toast | null>(null)
   const [dragging, setDragging] = useState(false)
   const [compareOpen, setCompareOpen] = useState(false)
+  const [compareSeed, setCompareSeed] = useState<WorkflowComparison | null>(null)
+  const [githubOpen, setGithubOpen] = useState(false)
   const dragDepth = useRef(0)
 
   const notify = useCallback((message: string, tone: 'ok' | 'error' = 'ok') => {
@@ -150,6 +154,11 @@ export default function App() {
 
   function resetSample() {
     loadSample(findSample(activeSampleId ?? '') ?? defaultSample)
+  }
+
+  function openCompare(seed: WorkflowComparison | null = null) {
+    setCompareSeed(seed)
+    setCompareOpen(true)
   }
 
   async function loadFile(file: File) {
@@ -235,8 +244,9 @@ export default function App() {
           }}
           onLoadSample={loadSample}
           onLoadFile={(file) => void loadFile(file)}
+          onLoadGitHub={() => setGithubOpen(true)}
           onReset={resetSample}
-          onCompare={() => setCompareOpen(true)}
+          onCompare={() => openCompare()}
         />
 
         <GraphPanel
@@ -264,11 +274,51 @@ export default function App() {
         </div>
       </main>
 
+      {githubOpen && (
+        <GitHubDialog
+          onClose={() => setGithubOpen(false)}
+          onOpen={(document) => {
+            setSource(document.source)
+            setFilename(document.filename)
+            setActiveSampleId(null)
+            setSelectedJob(null)
+            setGithubOpen(false)
+            notify(`Loaded ${document.path} from ${document.repository} (${document.revision})`)
+          }}
+          onCompare={(comparison) => {
+            setGithubOpen(false)
+            openCompare(comparison)
+          }}
+          onNotify={notify}
+        />
+      )}
+
       {compareOpen && (
         <CompareDialog
           source={source}
           filename={filename}
-          onClose={() => setCompareOpen(false)}
+          initialBefore={
+            compareSeed
+              ? {
+                  source: compareSeed.before.source,
+                  filename: compareSeed.before.filename,
+                  label: `${compareSeed.before.repository}@${compareSeed.before.revision}`,
+                }
+              : undefined
+          }
+          initialAfter={
+            compareSeed
+              ? {
+                  source: compareSeed.after.source,
+                  filename: compareSeed.after.filename,
+                  label: `${compareSeed.after.repository}@${compareSeed.after.revision}`,
+                }
+              : undefined
+          }
+          onClose={() => {
+            setCompareOpen(false)
+            setCompareSeed(null)
+          }}
         />
       )}
 

@@ -107,6 +107,23 @@ describe('diffWorkflow', () => {
     expect(JSON.stringify(diff)).not.toContain('--coverage')
   })
 
+  it('pairs an action version bump as a step change instead of an add and remove', () => {
+    const before = BASE.replace(
+      '      - name: Test',
+      '      - name: Set up Node.js\n        uses: actions/setup-node@v4\n      - name: Test',
+    )
+    const diff = compare(before, before.replace('actions/setup-node@v4', 'actions/setup-node@v7'))
+
+    expect(diff.steps.added).toEqual([])
+    expect(diff.steps.removed).toEqual([])
+    const test = diff.jobs.changed.find((job) => job.id === 'test')
+    expect(test?.changes).toContainEqual({
+      field: 'step 2 · Set up Node.js · uses',
+      before: 'actions/setup-node@v4',
+      after: 'actions/setup-node@v7',
+    })
+  })
+
   it('redacts secret-looking environment values', () => {
     const before = BASE.replace(
       '    steps:\n      - name: Deploy',

@@ -5,6 +5,22 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-10-30
+
+### Added
+- Load workflows from public GitHub repositories. Enter `owner/repo`, a repository URL, `owner/repo#123`, or a pull request URL in the new GitHub dialog; workflows are listed from `.github/workflows`.
+- Pull request review: modified and renamed workflow files open in Compare with the merge base as "before" and the PR head as "after". Using the merge base keeps unrelated commits added to the base branch after the PR was opened out of the comparison.
+- Workflows added by a pull request open at the head revision. Deleted workflows are listed and marked but cannot be opened.
+- Repository and pull request lookups run directly in the browser against the public GitHub API. No token is requested or stored, and workflow contents are fetched only for the file you choose.
+- Clear errors for missing repositories, missing workflow directories, network failures, and the unauthenticated GitHub API limit, including the reset time when GitHub provides one.
+
+### Changed
+- The Compare dialog can be opened with a before and after revision loaded from GitHub. The revision labels follow **Swap sides** and **Use current as before/after**.
+- The source panel has separate **Open file** and **GitHub** actions, with **Compare** and **Reset sample** on their own row.
+
+### Fixed
+- A step that keeps its name but changes `uses`, such as an action version bump, is now paired as one changed step instead of appearing as a step added and another removed.
+
 ## [0.2.0] - 2026-10-29
 
 ### Added

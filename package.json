@@ -1,6 +1,6 @@
 {
   "name": "action-lens",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "description": "See what a GitHub Actions workflow really does: job graph, matrix expansion, permissions, risks, and run footprint.",
   "license": "MIT",
